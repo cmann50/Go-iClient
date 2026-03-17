@@ -8,7 +8,7 @@ import (
 
 	b64 "encoding/base64"
 
-	"github.com/Johnw7789/Go-iClient/internal/srp"
+	"github.com/cmann50/Go-iClient/internal/srp"
 	http "github.com/bogdanfinn/fhttp"
 )
 
