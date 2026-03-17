@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cmann50/Go-iClient/icloud"
+	"github.com/Johnw7789/Go-iClient/icloud"
 )
 
 func main() {

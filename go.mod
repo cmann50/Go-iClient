@@ -1,4 +1,4 @@
-module github.com/cmann50/Go-iClient
+module github.com/Johnw7789/Go-iClient
 
 go 1.18
 
