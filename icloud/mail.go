@@ -102,6 +102,22 @@ func (c *Client) DraftMail(fromEmail, toEmail, subject, textBody, body string) (
 	return uid, nil
 }
 
+// ReplyDraft creates a reply draft that threads with the original message.
+// mode is "reply" or "replyAll". msgGuid is "message:FOLDER/UID" (e.g. "message:INBOX/12345").
+func (c *Client) ReplyDraft(fromEmail, toEmail, cc, subject, textBody, body string, inReplyTo, references []string, mode, msgGuid string) (string, error) {
+	respBody, err := c.reqReplyDraft(fromEmail, toEmail, cc, subject, textBody, body, inReplyTo, references, mode, msgGuid)
+	if err != nil {
+		return "", err
+	}
+
+	uid := gjson.Get(respBody, "result.uid").String()
+	if uid == "" {
+		return "", errors.New("failed to draft reply email")
+	}
+
+	return uid, nil
+}
+
 // * SendDraft() sends an email from the user's draft folder using the uid
 func (c *Client) SendDraft(uid string) (bool, error) {
 	resp, err := c.reqSendDraft(uid)
@@ -245,6 +261,55 @@ func (c *Client) reqMailDraft(fromEmail, toEmail, subject, textBody, body string
 	jsonBytes := buf.Bytes()
 
 	req, err := http.NewRequest(http.MethodPost, endpoints[mailDraft], bytes.NewReader(jsonBytes))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set(HdrContentType, "application/json")
+	req.Header.Set("origin", "https://www.icloud.com")
+	req.Header.Set("accept", "*/*")
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bodyBytes), nil
+}
+
+func (c *Client) reqReplyDraft(fromEmail, toEmail, cc, subject, textBody, body string, inReplyTo, references []string, mode, msgGuid string) (string, error) {
+	payload := MailDraftReq{
+		Jsonrpc: "2.0",
+		Method:  "saveDraft",
+		Params: Params{
+			From:               fromEmail,
+			To:                 toEmail,
+			Cc:                 cc,
+			Subject:            subject,
+			TextBody:           textBody,
+			Body:               body,
+			Attachments:        []any{},
+			WebmailClientBuild: "current",
+			HeaderInReplyTo:    inReplyTo,
+			HeaderReferences:   references,
+			Mode:               mode,
+			MsgGuid:            msgGuid,
+		},
+	}
+
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(payload); err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, endpoints[mailDraft], bytes.NewReader(buf.Bytes()))
 	if err != nil {
 		return "", err
 	}

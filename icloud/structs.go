@@ -147,13 +147,21 @@ type MailDraftReq struct {
 }
 
 type Params struct {
-	From               string `json:"from"`
-	To                 string `json:"to"`
-	Subject            string `json:"subject"`
-	TextBody           string `json:"textBody"`
-	Body               string `json:"body"`
-	Attachments        []any  `json:"attachments"`
-	WebmailClientBuild string `json:"webmailClientBuild"`
+	From               string   `json:"from"`
+	To                 string   `json:"to"`
+	Cc                 string   `json:"cc,omitempty"`
+	Subject            string   `json:"subject"`
+	Date               string   `json:"date,omitempty"`
+	TextBody           string   `json:"textBody"`
+	Body               string   `json:"body"`
+	Attachments        []any    `json:"attachments"`
+	WebmailClientBuild string   `json:"webmailClientBuild"`
+	HeaderInReplyTo    []string `json:"headerInReplyTo,omitempty"`
+	HeaderReferences   []string `json:"headerReferences,omitempty"`
+	Mode               string   `json:"mode,omitempty"`
+	MsgGuid            string   `json:"msgGuid,omitempty"`
+	DraftGuid          string   `json:"draftGuid,omitempty"`
+	IsHME              bool     `json:"isHME,omitempty"`
 }
 
 // ---- Find My ----
